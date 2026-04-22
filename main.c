@@ -5,26 +5,7 @@
 #include "raylib.h"
 #include "rlgl.h"
 
-#define ROOM_WIDTH 8
-#define RAND_LIMIT 3
-#define DOORS_ARRAY_SIZE 4
-
-enum Edge {
-  LEFT,
-  RIGHT,
-  FRONT,
-  BACK,
-  NO_EDGE
-};
-
-struct Node {
-  enum Edge doors[DOORS_ARRAY_SIZE];
-  int doorLen;
-  struct Node *left;
-  struct Node *right;
-  struct Node *front;
-  struct Node *back;
-};
+#include "main.h"
 
 struct Node *createNode() {
     struct Node *node = malloc(sizeof(struct Node));
@@ -44,7 +25,7 @@ void addDoorToNode(struct Node *head, enum Edge side) {
 void maybeGrowTreeToSide(struct Node *head, struct Node *sideRef, enum Edge side, enum Edge entry, int amount) {
   if (rand() % RAND_LIMIT == 1 && side != entry) {
     sideRef = createNode();
-    addDoorToNode(head, side)
+    addDoorToNode(head, side);
     growTree(sideRef, amount - 1, side);
   }
 }
