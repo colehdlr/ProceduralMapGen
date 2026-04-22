@@ -22,11 +22,11 @@ void addDoorToNode(struct Node *head, enum Edge side) {
   head->doorLen++;
 }
 
-void maybeGrowTreeToSide(struct Node *head, struct Node *sideRef, enum Edge side, enum Edge entry, int amount) {
+void maybeGrowTreeToSide(struct Node *head, struct Node **sideRef, enum Edge side, enum Edge entry, int amount) {
   if (rand() % RAND_LIMIT == 1 && side != entry) {
-    sideRef = createNode();
+    *sideRef = createNode();
     addDoorToNode(head, side);
-    growTree(sideRef, amount - 1, side);
+    growTree(*sideRef, amount - 1, side);
   }
 }
 
@@ -34,10 +34,10 @@ void growTree(struct Node *head, int amount, enum Edge entry) {
   addDoorToNode(head, entry);
 
   if (amount > 0) {
-    maybeGrowTreeToSide(head, head->left, LEFT, entry, amount);
-    maybeGrowTreeToSide(head, head->right, RIGHT, entry, amount);
-    maybeGrowTreeToSide(head, head->front, FRONT, entry, amount);
-    maybeGrowTreeToSide(head, head->back, BACK, entry, amount);
+    maybeGrowTreeToSide(head, &head->left, LEFT, entry, amount);
+    maybeGrowTreeToSide(head, &head->right, RIGHT, entry, amount);
+    maybeGrowTreeToSide(head, &head->front, FRONT, entry, amount);
+    maybeGrowTreeToSide(head, &head->back, BACK, entry, amount);
   }
 }
 
