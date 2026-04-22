@@ -2,6 +2,7 @@
 #define ROOM_HEIGHT 4
 #define RAND_LIMIT 3
 #define DOORS_ARRAY_SIZE 4
+#define WALLS_ARRAY_SIZE 4
 
 enum Edge {
   LEFT,
@@ -13,7 +14,9 @@ enum Edge {
 
 struct Node {
   enum Edge doors[DOORS_ARRAY_SIZE];
-  int doorLen;
+  int doorsLen;
+  enum Edge walls[WALLS_ARRAY_SIZE];
+  int wallsLen;
   struct Node *left;
   struct Node *right;
   struct Node *front;
