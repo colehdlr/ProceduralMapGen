@@ -12,8 +12,8 @@ struct Node *createNode() {
     node->doorLen = 0;
     node->left = NULL;
     node->right = NULL;
-    node->front = NULL;
     node->back = NULL;
+    node->front = NULL;
     return node;
 }
 
@@ -36,38 +36,42 @@ void growTree(struct Node *head, int amount, enum Edge entry) {
   if (amount > 0) {
     maybeGrowTreeToSide(head, &head->left, LEFT, entry, amount);
     maybeGrowTreeToSide(head, &head->right, RIGHT, entry, amount);
-    maybeGrowTreeToSide(head, &head->front, FRONT, entry, amount);
     maybeGrowTreeToSide(head, &head->back, BACK, entry, amount);
+    maybeGrowTreeToSide(head, &head->front, FRONT, entry, amount);
   }
+}
+
+Vector3 offsetByX(Vector3 position, int x) {
+  position.x += x;
+  return position;
+}
+
+Vector3 offsetByY(Vector3 position, int y) {
+  position.y += y;
+  return position;
+}
+
+Vector3 offsetByZ(Vector3 position, int z) {
+  position.z += z;
+  return position;
 }
 
 void drawRooms(struct Node *head, Vector3 position) {
   DrawPlane(position, (Vector2){ ROOM_WIDTH, ROOM_WIDTH }, RED);
-  Vector3 temp = position;
-  temp.y += 4;
-  DrawCube(temp, ROOM_WIDTH, 0.01f, ROOM_WIDTH, GRAY);
+  DrawCube(offsetByY(position, ROOM_HEIGHT), ROOM_WIDTH, 0.01f, ROOM_WIDTH, GRAY);
 
-  // TODO: Extract repeated logic
   if (head) {
     if (head->left) {
-      temp = position;
-      temp.x -= ROOM_WIDTH;
-      drawRooms(head->left, temp);
+      drawRooms(head->left, offsetByX(position, -ROOM_WIDTH));
     }
     if (head->right) {
-      temp = position;
-      temp.x += ROOM_WIDTH;
-      drawRooms(head->right, temp);
-    }
-    if (head->front) {
-      temp = position;
-      temp.z += ROOM_WIDTH;
-      drawRooms(head->front, temp);
+      drawRooms(head->right, offsetByX(position, ROOM_WIDTH));
     }
     if (head->back) {
-      temp = position;
-      temp.z -= ROOM_WIDTH;
-      drawRooms(head->back, temp);
+      drawRooms(head->back, offsetByZ(position, -ROOM_WIDTH));
+    }
+    if (head->front) {
+      drawRooms(head->front, offsetByZ(position, ROOM_WIDTH));
     }
   }
 }

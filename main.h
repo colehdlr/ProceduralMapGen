@@ -1,12 +1,13 @@
 #define ROOM_WIDTH 8
+#define ROOM_HEIGHT 4
 #define RAND_LIMIT 3
 #define DOORS_ARRAY_SIZE 4
 
 enum Edge {
   LEFT,
   RIGHT,
-  FRONT,
   BACK,
+  FRONT,
   NO_EDGE
 };
 
