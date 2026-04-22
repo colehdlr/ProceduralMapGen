@@ -36,32 +36,27 @@ struct Node *createNode() {
     return node;
 }
 
-void growTree(struct Node *head, int amount, enum Edge entry) {
-  head->doors[0] = entry;
+void addDoorToNode(struct Node *head, enum Edge side) {
+  head->doors[head->doorLen] = side;
   head->doorLen++;
+}
 
-  // TODO: Extract repeated logic
+void maybeGrowTreeToSide(struct Node *head, struct Node *sideRef, enum Edge side, enum Edge entry, int amount) {
+  if (rand() % RAND_LIMIT == 1 && side != entry) {
+    sideRef = createNode();
+    addDoorToNode(head, side)
+    growTree(sideRef, amount - 1, side);
+  }
+}
+
+void growTree(struct Node *head, int amount, enum Edge entry) {
+  addDoorToNode(head, entry);
+
   if (amount > 0) {
-    if (rand() % RAND_LIMIT == 1 && entry != LEFT) {
-      head->left = createNode();
-      head->doors[head->doorLen] = LEFT;
-      growTree(head->left, amount - 1, LEFT);
-    }
-    if (rand() % RAND_LIMIT == 1 && entry != RIGHT) {
-      head->right = createNode();
-      head->doors[head->doorLen] = RIGHT;
-      growTree(head->right, amount - 1, RIGHT);
-    }
-    if (rand() % RAND_LIMIT == 1 && entry != FRONT) {
-      head->front = createNode();
-      head->doors[head->doorLen] = FRONT;
-      growTree(head->front, amount - 1, FRONT);
-    }
-    if (rand() % RAND_LIMIT == 1 && entry != BACK) {
-      head->back = createNode();
-      head->doors[head->doorLen] = BACK;
-      growTree(head->back, amount - 1, BACK);
-    }
+    maybeGrowTreeToSide(head, head->left, LEFT, entry, amount);
+    maybeGrowTreeToSide(head, head->right, RIGHT, entry, amount);
+    maybeGrowTreeToSide(head, head->front, FRONT, entry, amount);
+    maybeGrowTreeToSide(head, head->back, BACK, entry, amount);
   }
 }
 

@@ -8,8 +8,13 @@ LDFLAGS = -L$(RAYLIB_PATH)/lib -lraylib \
 TARGET = game
 SRC = main.c
 
-all:
+all: $(TARGET)
+
+$(TARGET): $(SRC)
 	$(CC) $(SRC) -o $(TARGET) $(CFLAGS) $(LDFLAGS)
+
+run: $(TARGET)
+	./$(TARGET)
 
 clean:
 	rm -f $(TARGET)
