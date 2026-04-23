@@ -7,8 +7,8 @@
 
 #include "main.h"
 
-struct Node *createNode() {
-    struct Node *node = malloc(sizeof(struct Node));
+Node *createNode() {
+    Node *node = malloc(sizeof(Node));
     node->left = NULL;
     node->right = NULL;
     node->back = NULL;
@@ -16,7 +16,7 @@ struct Node *createNode() {
     return node;
 }
 
-enum Edge getOppositeSide(enum Edge side) {
+Edge getOppositeSide(Edge side) {
   switch (side) {
     case LEFT:
       return RIGHT;
@@ -31,7 +31,7 @@ enum Edge getOppositeSide(enum Edge side) {
   } 
 }
 
-void maybeGrowTreeToSide(struct Node *head, struct Node **sideRef, enum Edge side, enum Edge entry, int amount) {
+void maybeGrowTreeToSide(Node *head, Node **sideRef, Edge side, Edge entry, int amount) {
   if (side != entry) {
     if (rand() % RAND_LIMIT == 1) {
       *sideRef = createNode();
@@ -43,7 +43,7 @@ void maybeGrowTreeToSide(struct Node *head, struct Node **sideRef, enum Edge sid
   }
 }
 
-void growTree(struct Node *head, int amount, enum Edge entry) {
+void growTree(Node *head, int amount, Edge entry) {
   if (amount > 0) {
     maybeGrowTreeToSide(head, &head->left, LEFT, entry, amount);
     maybeGrowTreeToSide(head, &head->right, RIGHT, entry, amount);
@@ -75,7 +75,7 @@ Vector3 offsetByZ(Vector3 position, int z) {
   return position;
 }
 
-void drawRooms(struct Node *head, Vector3 position) {
+void drawRooms(Node *head, Vector3 position) {
   // Floor
   DrawPlane(position, (Vector2){ ROOM_WIDTH, ROOM_WIDTH }, RED);
   // Ceiling
@@ -136,7 +136,7 @@ int main(void)
   // Create tree
   srand(time(NULL));
 
-  struct Node *head = createNode();
+  Node *head = createNode();
   growTree(head, 3, NO_EDGE);
 
   int cameraMode = CAMERA_FIRST_PERSON;
