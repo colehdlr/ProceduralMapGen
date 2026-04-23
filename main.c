@@ -75,26 +75,38 @@ Vector3 offsetByZ(Vector3 position, int z) {
   return position;
 }
 
-void drawRooms(Node *head, Vector3 position) {
+typedef struct Models {
+  Model *ceiling;
+  Model *floor;
+  Model *wall;
+} Models;
+
+void drawRooms(Node *head, Vector3 position, Models *models) {
   // Floor
-  DrawPlane(position, (Vector2){ ROOM_WIDTH, ROOM_WIDTH }, RED);
+  DrawModel(*models->floor, position, 1.0f, WHITE);
+
   // Ceiling
-  DrawCube(offsetByY(position, ROOM_HEIGHT), ROOM_WIDTH, 0.01f, ROOM_WIDTH, GRAY);
+  DrawModel(*models->ceiling, offsetByY(position, ROOM_HEIGHT), 1.0f, WHITE);
+
   // Edges
   for (int i = LEFT; i <= FRONT; i++) {
     if (head->walls[i] == 1) {
       switch (i) {
         case LEFT:
-          DrawCube(Vector3Add(position, (Vector3){-ROOM_WIDTH/2, ROOM_HEIGHT/2, 0}), WALL_THICKNESS, ROOM_HEIGHT, WALL_WIDTH, YELLOW);
+          models->wall->transform = MatrixRotateZ(DEG2RAD*-90);
+          DrawModel(*models->wall, Vector3Add(position, (Vector3){-ROOM_WIDTH/2, ROOM_HEIGHT/2, 0}), 1.0f, WHITE);
           break;
         case RIGHT:
-          DrawCube(Vector3Add(position, (Vector3){ROOM_WIDTH/2, ROOM_HEIGHT/2, 0}), WALL_THICKNESS, ROOM_HEIGHT, WALL_WIDTH, GREEN);
+          models->wall->transform = MatrixRotateZ(DEG2RAD*90);
+          DrawModel(*models->wall, Vector3Add(position, (Vector3){ROOM_WIDTH/2, ROOM_HEIGHT/2, 0}), 1.0f, WHITE);
           break;
         case BACK:
-          DrawCube(Vector3Add(position, (Vector3){0, ROOM_HEIGHT/2, -ROOM_WIDTH/2}), WALL_WIDTH, ROOM_HEIGHT, WALL_THICKNESS, BLUE);
+          models->wall->transform = MatrixRotateX(DEG2RAD*90);
+          DrawModel(*models->wall, Vector3Add(position, (Vector3){0, ROOM_HEIGHT/2, -ROOM_WIDTH/2}), 1.0f, WHITE);
           break;
         case FRONT:
-          DrawCube(Vector3Add(position, (Vector3){0, ROOM_HEIGHT/2, ROOM_WIDTH/2}), WALL_WIDTH, ROOM_HEIGHT, WALL_THICKNESS, BLUE);
+          models->wall->transform = MatrixRotateX(DEG2RAD*-90);
+          DrawModel(*models->wall, Vector3Add(position, (Vector3){0, ROOM_HEIGHT/2, ROOM_WIDTH/2}), 1.0f, WHITE);
           break;
       }
     }
@@ -102,16 +114,16 @@ void drawRooms(Node *head, Vector3 position) {
 
   if (head) {
     if (head->left) {
-      drawRooms(head->left, offsetByX(position, -ROOM_WIDTH));
+      drawRooms(head->left, offsetByX(position, -ROOM_WIDTH), models);
     }
     if (head->right) {
-      drawRooms(head->right, offsetByX(position, ROOM_WIDTH));
+      drawRooms(head->right, offsetByX(position, ROOM_WIDTH), models);
     }
     if (head->back) {
-      drawRooms(head->back, offsetByZ(position, -ROOM_WIDTH));
+      drawRooms(head->back, offsetByZ(position, -ROOM_WIDTH), models);
     }
     if (head->front) {
-      drawRooms(head->front, offsetByZ(position, ROOM_WIDTH));
+      drawRooms(head->front, offsetByZ(position, ROOM_WIDTH), models);
     }
   }
 }
@@ -133,6 +145,33 @@ int main(void)
   camera.up       = (Vector3){ 0.0f, 1.0f, 0.0f };
   camera.fovy     =  60.0f;
   camera.projection = CAMERA_PERSPECTIVE;
+
+  // Load textures
+  Image floorImage = LoadImage("assets/floor.jpg");
+  Image ceilingImage = LoadImage("assets/ceiling.jpg");
+  Image wallImage = LoadImage("assets/wall.jpg");
+  Texture2D floorTexture = LoadTextureFromImage(floorImage);
+  Texture2D ceilingTexture = LoadTextureFromImage(ceilingImage);
+  Texture2D wallTexture = LoadTextureFromImage(wallImage);
+  UnloadImage(floorImage);
+  UnloadImage(ceilingImage);
+  UnloadImage(wallImage);
+
+  // Load models
+  Models models;
+
+  Model ceiling = LoadModelFromMesh(GenMeshPlane(ROOM_WIDTH, ROOM_WIDTH, 4, 4));
+  ceiling.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = ceilingTexture;
+  ceiling.transform = MatrixRotateX(DEG2RAD*180);
+  models.ceiling = &ceiling;
+
+  Model floor = LoadModelFromMesh(GenMeshPlane(ROOM_WIDTH, ROOM_WIDTH, 4, 4));
+  floor.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = floorTexture;
+  models.floor = &floor;
+
+  Model wall = LoadModelFromMesh(GenMeshPlane(ROOM_WIDTH, ROOM_WIDTH, 4, 4));
+  wall.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = wallTexture;
+  models.wall = &wall;
 
   // Create tree
   srand(time(NULL));
@@ -156,7 +195,7 @@ int main(void)
 
       BeginMode3D(camera);
 
-      drawRooms(head, (Vector3){0, 0, 5});
+      drawRooms(head, (Vector3){0, 0, 5}, &models);
 
       EndMode3D();
 
