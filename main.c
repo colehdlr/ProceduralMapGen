@@ -118,10 +118,11 @@ void drawRooms(Node *head, Vector3 position) {
 
 int main(void)
 {
-  const int screenWidth = 800;
-  const int screenHeight = 450;
+  const int screenWidth = 1400;
+  const int screenHeight = 900;
 
   SetConfigFlags(FLAG_MSAA_4X_HINT);
+  SetConfigFlags(FLAG_VSYNC_HINT);
 
   InitWindow(screenWidth, screenHeight, "Procedural Generation Demo");
 
@@ -130,7 +131,7 @@ int main(void)
   camera.position = (Vector3){ 0.0f, 2.0f, 4.0f };
   camera.target   = (Vector3){ 0.0f, 2.0f, 0.0f };
   camera.up       = (Vector3){ 0.0f, 1.0f, 0.0f };
-  camera.fovy     = 60.0f;
+  camera.fovy     =  60.0f;
   camera.projection = CAMERA_PERSPECTIVE;
 
   // Create tree
@@ -142,7 +143,7 @@ int main(void)
   int cameraMode = CAMERA_FIRST_PERSON;
 
   DisableCursor();
-  SetTargetFPS(80);
+  SetTargetFPS(144);
 
   while (!WindowShouldClose())
   {
