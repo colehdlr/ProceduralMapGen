@@ -9,8 +9,6 @@
 
 struct Node *createNode() {
     struct Node *node = malloc(sizeof(struct Node));
-    node->doorsLen = 0;
-    node->wallsLen = 0;
     node->left = NULL;
     node->right = NULL;
     node->back = NULL;
@@ -18,32 +16,34 @@ struct Node *createNode() {
     return node;
 }
 
-void addWallToNode(struct Node *head, enum Edge side) {
-  head->walls[head->wallsLen] = side;
-  head->wallsLen++;
-}
-
-void addDoorToNode(struct Node *head, enum Edge side) {
-  head->doors[head->doorsLen] = side;
-  head->doorsLen++;
+enum Edge getOppositeSide(enum Edge side) {
+  switch (side) {
+    case LEFT:
+      return RIGHT;
+    case RIGHT:
+      return LEFT;
+    case BACK:
+      return FRONT;
+    case FRONT:
+      return BACK;
+    default:
+      return NO_EDGE;
+  } 
 }
 
 void maybeGrowTreeToSide(struct Node *head, struct Node **sideRef, enum Edge side, enum Edge entry, int amount) {
   if (side != entry) {
     if (rand() % RAND_LIMIT == 1) {
       *sideRef = createNode();
-      addDoorToNode(head, side);
-      growTree(*sideRef, amount - 1, side);
+      growTree(*sideRef, amount - 1, getOppositeSide(side));
     }
     else {
-      addWallToNode(head, side);
+      head->walls[side] = 1;
     }
   }
 }
 
 void growTree(struct Node *head, int amount, enum Edge entry) {
-  addDoorToNode(head, entry);
-
   if (amount > 0) {
     maybeGrowTreeToSide(head, &head->left, LEFT, entry, amount);
     maybeGrowTreeToSide(head, &head->right, RIGHT, entry, amount);
@@ -52,7 +52,11 @@ void growTree(struct Node *head, int amount, enum Edge entry) {
   }
   else {
     // Leaf node
-    // TODO: Add walls to all sides other than entry
+    for (int i = LEFT; i <= FRONT; i++) {
+      if (i != entry) {
+        head->walls[i] = 1;
+      }
+    }
   }
 }
 
@@ -77,22 +81,23 @@ void drawRooms(struct Node *head, Vector3 position) {
   // Ceiling
   DrawCube(offsetByY(position, ROOM_HEIGHT), ROOM_WIDTH, 0.01f, ROOM_WIDTH, GRAY);
   // Edges
-  // TODO: Why so many walls, and no doors? FIX
-  for (int i = 0; i < head->wallsLen; i++) {
-    switch (head->walls[i]) {
-      case LEFT:
-        DrawCube(Vector3Add(position, (Vector3){-ROOM_WIDTH/2, ROOM_HEIGHT/2, 0}), 0.01f, ROOM_HEIGHT, ROOM_WIDTH, YELLOW);
-        break;
-      case RIGHT:
-        DrawCube(Vector3Add(position, (Vector3){ROOM_WIDTH/2, ROOM_HEIGHT/2, 0}), 0.01f, ROOM_HEIGHT, ROOM_WIDTH, GREEN);
-        break;
-      default:
-        break;
+  for (int i = LEFT; i <= FRONT; i++) {
+    if (head->walls[i] == 1) {
+      switch (i) {
+        case LEFT:
+          DrawCube(Vector3Add(position, (Vector3){-ROOM_WIDTH/2, ROOM_HEIGHT/2, 0}), 0.01f, ROOM_HEIGHT, ROOM_WIDTH, YELLOW);
+          break;
+        case RIGHT:
+          DrawCube(Vector3Add(position, (Vector3){ROOM_WIDTH/2, ROOM_HEIGHT/2, 0}), 0.01f, ROOM_HEIGHT, ROOM_WIDTH, GREEN);
+          break;
+        case BACK:
+          DrawCube(Vector3Add(position, (Vector3){0, ROOM_HEIGHT/2, -ROOM_WIDTH/2}), ROOM_WIDTH, ROOM_HEIGHT, 0.01f, BLUE);
+          break;
+        case FRONT:
+          DrawCube(Vector3Add(position, (Vector3){0, ROOM_HEIGHT/2, ROOM_WIDTH/2}), ROOM_WIDTH, ROOM_HEIGHT, 0.01f, BLUE);
+          break;
+      }
     }
-  }
-  for (int i = 0; i < head->doorsLen; i++) {
-    // When we add doored walls we can extract the logic
-    // from above to avoid duplication.
   }
 
   if (head) {
