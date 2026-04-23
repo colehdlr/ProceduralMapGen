@@ -85,16 +85,16 @@ void drawRooms(Node *head, Vector3 position) {
     if (head->walls[i] == 1) {
       switch (i) {
         case LEFT:
-          DrawCube(Vector3Add(position, (Vector3){-ROOM_WIDTH/2, ROOM_HEIGHT/2, 0}), 0.01f, ROOM_HEIGHT, ROOM_WIDTH, YELLOW);
+          DrawCube(Vector3Add(position, (Vector3){-ROOM_WIDTH/2, ROOM_HEIGHT/2, 0}), WALL_THICKNESS, ROOM_HEIGHT, WALL_WIDTH, YELLOW);
           break;
         case RIGHT:
-          DrawCube(Vector3Add(position, (Vector3){ROOM_WIDTH/2, ROOM_HEIGHT/2, 0}), 0.01f, ROOM_HEIGHT, ROOM_WIDTH, GREEN);
+          DrawCube(Vector3Add(position, (Vector3){ROOM_WIDTH/2, ROOM_HEIGHT/2, 0}), WALL_THICKNESS, ROOM_HEIGHT, WALL_WIDTH, GREEN);
           break;
         case BACK:
-          DrawCube(Vector3Add(position, (Vector3){0, ROOM_HEIGHT/2, -ROOM_WIDTH/2}), ROOM_WIDTH, ROOM_HEIGHT, 0.01f, BLUE);
+          DrawCube(Vector3Add(position, (Vector3){0, ROOM_HEIGHT/2, -ROOM_WIDTH/2}), WALL_WIDTH, ROOM_HEIGHT, WALL_THICKNESS, BLUE);
           break;
         case FRONT:
-          DrawCube(Vector3Add(position, (Vector3){0, ROOM_HEIGHT/2, ROOM_WIDTH/2}), ROOM_WIDTH, ROOM_HEIGHT, 0.01f, BLUE);
+          DrawCube(Vector3Add(position, (Vector3){0, ROOM_HEIGHT/2, ROOM_WIDTH/2}), WALL_WIDTH, ROOM_HEIGHT, WALL_THICKNESS, BLUE);
           break;
       }
     }
