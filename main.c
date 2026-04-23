@@ -93,19 +93,19 @@ void drawRooms(Node *head, Vector3 position, Models *models) {
     if (head->walls[i] == 1) {
       switch (i) {
         case LEFT:
-          models->wall->transform = MatrixRotateZ(DEG2RAD*-90);
+          models->wall->transform = MatrixRotateXYZ((Vector3){DEG2RAD*-90, 0, DEG2RAD*-90});
           DrawModel(*models->wall, Vector3Add(position, (Vector3){-ROOM_WIDTH/2, ROOM_HEIGHT/2, 0}), 1.0f, WHITE);
           break;
         case RIGHT:
-          models->wall->transform = MatrixRotateZ(DEG2RAD*90);
+          models->wall->transform = MatrixRotateXYZ((Vector3){DEG2RAD*-90, 0, DEG2RAD*90});
           DrawModel(*models->wall, Vector3Add(position, (Vector3){ROOM_WIDTH/2, ROOM_HEIGHT/2, 0}), 1.0f, WHITE);
           break;
         case BACK:
-          models->wall->transform = MatrixRotateX(DEG2RAD*90);
+          models->wall->transform = MatrixRotateXYZ((Vector3){-DEG2RAD*90, 0, DEG2RAD*-180});
           DrawModel(*models->wall, Vector3Add(position, (Vector3){0, ROOM_HEIGHT/2, -ROOM_WIDTH/2}), 1.0f, WHITE);
           break;
         case FRONT:
-          models->wall->transform = MatrixRotateX(DEG2RAD*-90);
+          models->wall->transform = MatrixRotateXYZ((Vector3){DEG2RAD*90, DEG2RAD*180, DEG2RAD*180});
           DrawModel(*models->wall, Vector3Add(position, (Vector3){0, ROOM_HEIGHT/2, ROOM_WIDTH/2}), 1.0f, WHITE);
           break;
       }
@@ -160,16 +160,16 @@ int main(void)
   // Load models
   Models models;
 
-  Model ceiling = LoadModelFromMesh(GenMeshPlane(ROOM_WIDTH, ROOM_WIDTH, 4, 4));
+  Model ceiling = LoadModelFromMesh(GenMeshPlane(ROOM_WIDTH, ROOM_WIDTH, 1, 1));
   ceiling.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = ceilingTexture;
   ceiling.transform = MatrixRotateX(DEG2RAD*180);
   models.ceiling = &ceiling;
 
-  Model floor = LoadModelFromMesh(GenMeshPlane(ROOM_WIDTH, ROOM_WIDTH, 4, 4));
+  Model floor = LoadModelFromMesh(GenMeshPlane(ROOM_WIDTH, ROOM_WIDTH, 1, 1));
   floor.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = floorTexture;
   models.floor = &floor;
 
-  Model wall = LoadModelFromMesh(GenMeshPlane(ROOM_WIDTH, ROOM_WIDTH, 4, 4));
+  Model wall = LoadModelFromMesh(GenMeshPlane(ROOM_WIDTH, ROOM_HEIGHT, 1, 1));
   wall.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = wallTexture;
   models.wall = &wall;
 
@@ -191,7 +191,7 @@ int main(void)
 
       // Draw
       BeginDrawing();
-      ClearBackground(RAYWHITE);
+      ClearBackground(GREEN);
 
       BeginMode3D(camera);
 

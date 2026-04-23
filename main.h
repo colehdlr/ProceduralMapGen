@@ -1,9 +1,7 @@
-#define ROOM_WIDTH 8
+#define ROOM_WIDTH 16
 #define ROOM_HEIGHT 4
 #define RAND_LIMIT 2
 #define WALLS_ARRAY_SIZE 4
-#define WALL_THICKNESS 0.5f
-#define WALL_WIDTH 8
 
 typedef enum Edge {
   LEFT,
