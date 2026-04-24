@@ -1,7 +1,6 @@
-#define ROOM_WIDTH 16
-#define ROOM_HEIGHT 4
-#define RAND_LIMIT 2
-#define WALLS_ARRAY_SIZE 4
+#pragma once
+
+#include "constants.h"
 
 typedef enum Edge {
   LEFT,
@@ -18,5 +17,3 @@ typedef struct Node {
   struct Node *front;
   struct Node *back;
 } Node;
-
-void growTree(struct Node *head, int amount, enum Edge entry);
