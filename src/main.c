@@ -10,8 +10,8 @@
 #include "types.h"
 #include "utils.h"
 
-void growWorld(Node *world[WORLD_CACHE_SIZE][WORLD_CACHE_SIZE], Node *head, Vector2Int location, int depth, Edge entry) {
-  world[location.x][location.y] = head;
+void growWorld(Node *world[WORLD_CACHE_LENGTH][WORLD_CACHE_LENGTH], Node *head, Vector2Int position, int depth, Edge entry) {
+  world[position.x][position.y] = head;
 
   int availableSides = NUM_SIDES;
 
@@ -27,9 +27,9 @@ void growWorld(Node *world[WORLD_CACHE_SIZE][WORLD_CACHE_SIZE], Node *head, Vect
     Edge side = rand() % (NUM_SIDES - 1);
     if (side >= entry) side++;
 
-    Vector2Int newLocation = stepInDirection(side, location);
+    Vector2Int newPosition = stepInDirection(side, position);
 
-    if (*sides[side] == NULL && world[newLocation.x][newLocation.y] == NULL) {
+    if (*sides[side] == NULL && world[newPosition.x][newPosition.y] == NULL) {
       *sides[side] = createNode(); 
       switch (getOppositeSide(side)) {
         case LEFT:
@@ -48,7 +48,7 @@ void growWorld(Node *world[WORLD_CACHE_SIZE][WORLD_CACHE_SIZE], Node *head, Vect
           break;
       }
 
-      growWorld(world, *sides[side], newLocation, depth - 1, getOppositeSide(side));
+      growWorld(world, *sides[side], newPosition, depth - 1, getOppositeSide(side));
       availableSides--;
     }
   }
@@ -145,11 +145,9 @@ int main(void)
   // Create world 
   srand(time(NULL));
 
-  Node *world[WORLD_CACHE_SIZE][WORLD_CACHE_SIZE];
+  Node *world[WORLD_CACHE_LENGTH][WORLD_CACHE_LENGTH];
   Node *head = createNode();
-  growWorld(world, head, (Vector2Int){WORLD_CACHE_SIZE/2, WORLD_CACHE_SIZE/2}, RENDER_DEPTH, NO_EDGE);
-
-  int cameraMode = CAMERA_FIRST_PERSON;
+  growWorld(world, head, (Vector2Int){WORLD_CACHE_LENGTH/2, WORLD_CACHE_LENGTH/2}, RENDER_DEPTH, NO_EDGE);
 
   DisableCursor();
   SetTargetFPS(144);
@@ -157,11 +155,11 @@ int main(void)
   while (!WindowShouldClose())
   {
       // Update camera
-      UpdateCamera(&camera, cameraMode);
+      UpdateCamera(&camera, CAMERA_FIRST_PERSON);
 
       // Draw
       BeginDrawing();
-      ClearBackground(RED);
+      ClearBackground(BLACK);
 
       BeginMode3D(camera);
 
@@ -171,7 +169,7 @@ int main(void)
 
       DrawFPS(10, 10);
       Vector2Int worldPos = convertPositionToWorld(camera.position);
-      DrawText(TextFormat("Location: %d %d", worldPos.x , worldPos.y), 10, 50, 20, GREEN);
+      DrawText(TextFormat("position: %d %d", worldPos.x , worldPos.y), 10, 50, 20, GREEN);
 
       EndDrawing();
   }

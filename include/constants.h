@@ -7,4 +7,4 @@
 
 #define RENDER_DEPTH 5
 
-#define WORLD_CACHE_SIZE 100
+#define WORLD_CACHE_LENGTH 100
