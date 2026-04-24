@@ -145,7 +145,7 @@ int main(void)
   // Create world 
   srand(time(NULL));
 
-  Node *world[WORLD_CACHE_LENGTH][WORLD_CACHE_LENGTH];
+  Node *world[WORLD_CACHE_LENGTH][WORLD_CACHE_LENGTH] = {0};
   Node *head = createNode();
   growWorld(world, head, (Vector2Int){WORLD_CACHE_LENGTH/2, WORLD_CACHE_LENGTH/2}, RENDER_DEPTH, NO_EDGE);
 
