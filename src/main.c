@@ -31,27 +31,6 @@ void growTree(Node *head, int amount, Edge entry) {
   maybeGrowTreeToSide(head, &head->front, FRONT, entry, amount);
 }
 
-Vector3 offsetByX(Vector3 position, int x) {
-  position.x += x;
-  return position;
-}
-
-Vector3 offsetByY(Vector3 position, int y) {
-  position.y += y;
-  return position;
-}
-
-Vector3 offsetByZ(Vector3 position, int z) {
-  position.z += z;
-  return position;
-}
-
-typedef struct Models {
-  Model *ceiling;
-  Model *floor;
-  Model *wall;
-} Models;
-
 void drawRooms(Node *head, Vector3 position, Models *models, Edge entry) {
   // Floor
   DrawModel(*models->floor, position, 1.0f, WHITE);

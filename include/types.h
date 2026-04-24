@@ -17,3 +17,9 @@ typedef struct Node {
   struct Node *front;
   struct Node *back;
 } Node;
+
+typedef struct Models {
+  Model *ceiling;
+  Model *floor;
+  Model *wall;
+} Models;
