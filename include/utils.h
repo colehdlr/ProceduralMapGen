@@ -3,7 +3,7 @@
 
 Node *createNode();
 
-Vector2Int moveFromLocation(Edge direction, Vector2Int location);
+Vector2Int stepInDirection(Edge direction, Vector2Int location);
 
 Edge getOppositeSide(Edge side);
 

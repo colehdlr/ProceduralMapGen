@@ -9,30 +9,33 @@
 #include "types.h"
 #include "utils.h"
 
-void maybeGrowWorldToSide(Node *world[WORLD_CACHE_SIZE][WORLD_CACHE_SIZE], Node *head, Vector2Int location, Node **sideRef, Edge side, Edge entry, int depth) {
-  Vector2Int newLocation = moveFromLocation(side, location);
-
-  if (side == entry) {
-    *sideRef = head;
-  }
-  else {
-    if (!world[newLocation.x][newLocation.y] && rand() % RAND_LIMIT == 0) {
-      *sideRef = createNode();
-      if (depth > 0) growWorld(world, *sideRef, newLocation, depth - 1, getOppositeSide(side));
-    }
-    else {
-      head->walls[side] = 1;
-    }
-  }
-}
-
 void growWorld(Node *world[WORLD_CACHE_SIZE][WORLD_CACHE_SIZE], Node *head, Vector2Int location, int depth, Edge entry) {
   world[location.x][location.y] = head;
 
-  maybeGrowWorldToSide(world, head, location, &head->left, LEFT, entry, depth);
-  maybeGrowWorldToSide(world, head, location, &head->right, RIGHT, entry, depth);
-  maybeGrowWorldToSide(world, head, location, &head->back, BACK, entry, depth);
-  maybeGrowWorldToSide(world, head, location, &head->front, FRONT, entry, depth);
+  int availableSides = NUM_SIDES;
+
+  Node **sides[NUM_SIDES] = {&head->left, &head->right, &head->back, &head->front};
+
+  if (entry != NO_EDGE) {
+    *sides[entry] = head;
+    availableSides--;
+  }
+
+  if (depth == 0) return;
+
+  do {
+    Edge side = rand() % NUM_SIDES - 1;
+    if (side >= entry) side++;
+
+    Vector2Int newLocation = stepInDirection(side, location);
+
+    if (*sides[side] == NULL && world[newLocation.x][newLocation.y] != NULL) {
+      *sides[side] = createNode();
+      growWorld(world, *sides[side], newLocation, depth - 1, getOppositeSide(side));
+      availableSides--;
+    }
+  }
+  while (availableSides > 0 && rand() % RAND_LIMIT == 0);
 }
 
 void drawRooms(Node *head, Vector3 position, Models *models, Edge entry) {
@@ -42,41 +45,36 @@ void drawRooms(Node *head, Vector3 position, Models *models, Edge entry) {
   // Ceiling
   DrawModel(*models->ceiling, offsetByY(position, ROOM_HEIGHT), 1.0f, WHITE);
 
-  // Edges
-  for (int i = LEFT; i <= FRONT; i++) {
-    if (head->walls[i] == 1) {
-      switch (i) {
-        case LEFT:
-          models->wall->transform = MatrixRotateXYZ((Vector3){DEG2RAD*-90, 0, DEG2RAD*-90});
-          DrawModel(*models->wall, Vector3Add(position, (Vector3){-ROOM_WIDTH/2, ROOM_HEIGHT/2, 0}), 1.0f, WHITE);
-          break;
-        case RIGHT:
-          models->wall->transform = MatrixRotateXYZ((Vector3){DEG2RAD*-90, 0, DEG2RAD*90});
-          DrawModel(*models->wall, Vector3Add(position, (Vector3){ROOM_WIDTH/2, ROOM_HEIGHT/2, 0}), 1.0f, WHITE);
-          break;
-        case BACK:
-          models->wall->transform = MatrixRotateXYZ((Vector3){-DEG2RAD*90, 0, DEG2RAD*-180});
-          DrawModel(*models->wall, Vector3Add(position, (Vector3){0, ROOM_HEIGHT/2, -ROOM_WIDTH/2}), 1.0f, WHITE);
-          break;
-        case FRONT:
-          models->wall->transform = MatrixRotateXYZ((Vector3){DEG2RAD*90, DEG2RAD*180, DEG2RAD*180});
-          DrawModel(*models->wall, Vector3Add(position, (Vector3){0, ROOM_HEIGHT/2, ROOM_WIDTH/2}), 1.0f, WHITE);
-          break;
-      }
-    }
-  }
-
   if (head) {
-    if (head->left && entry != LEFT) {
+    if (head->left == NULL) {
+      models->wall->transform = MatrixRotateXYZ((Vector3){DEG2RAD*-90, 0, DEG2RAD*-90});
+      DrawModel(*models->wall, Vector3Add(position, (Vector3){-ROOM_WIDTH/2, ROOM_HEIGHT/2, 0}), 1.0f, WHITE);
+    }
+    else if (entry != LEFT) {
       drawRooms(head->left, offsetByX(position, -ROOM_WIDTH), models, getOppositeSide(LEFT));
     }
-    if (head->right && entry != RIGHT) {
+
+    if (head->right == NULL) {
+      models->wall->transform = MatrixRotateXYZ((Vector3){DEG2RAD*-90, 0, DEG2RAD*90});
+      DrawModel(*models->wall, Vector3Add(position, (Vector3){ROOM_WIDTH/2, ROOM_HEIGHT/2, 0}), 1.0f, WHITE);
+    }
+    else if (entry != RIGHT) {
       drawRooms(head->right, offsetByX(position, ROOM_WIDTH), models, getOppositeSide(RIGHT));
     }
-    if (head->back && entry != BACK) {
+    
+    if (head->back == NULL) {
+      models->wall->transform = MatrixRotateXYZ((Vector3){-DEG2RAD*90, 0, DEG2RAD*-180});
+      DrawModel(*models->wall, Vector3Add(position, (Vector3){0, ROOM_HEIGHT/2, -ROOM_WIDTH/2}), 1.0f, WHITE);
+    }
+    else if (entry != BACK) {
       drawRooms(head->back, offsetByZ(position, -ROOM_WIDTH), models, getOppositeSide(BACK));
     }
-    if (head->front && entry != FRONT) {
+
+    if (head->front == NULL) {
+      models->wall->transform = MatrixRotateXYZ((Vector3){DEG2RAD*90, DEG2RAD*180, DEG2RAD*180});
+      DrawModel(*models->wall, Vector3Add(position, (Vector3){0, ROOM_HEIGHT/2, ROOM_WIDTH/2}), 1.0f, WHITE);
+    }
+    else if (entry != FRONT) {
       drawRooms(head->front, offsetByZ(position, ROOM_WIDTH), models, getOppositeSide(FRONT));
     }
   }
@@ -132,7 +130,7 @@ int main(void)
 
   Node *world[WORLD_CACHE_SIZE][WORLD_CACHE_SIZE];
   Node *head = createNode();
-  growWorld(world, head, (Vector2Int){0, 0}, RENDER_DEPTH, NO_EDGE);
+  growWorld(world, head, (Vector2Int){WORLD_CACHE_SIZE/2, WORLD_CACHE_SIZE/2}, RENDER_DEPTH, NO_EDGE);
 
   int cameraMode = CAMERA_FIRST_PERSON;
 

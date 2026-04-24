@@ -12,7 +12,7 @@ Node *createNode() {
   return node;
 }
 
-Vector2Int moveFromLocation(Edge direction, Vector2Int location) {
+Vector2Int stepInDirection(Edge direction, Vector2Int location) {
   switch (direction) {
     case LEFT:
       location.x--;

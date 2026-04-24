@@ -17,7 +17,7 @@ typedef struct Vector2Int {
 } Vector2Int;
 
 typedef struct Node {
-  enum Edge walls[WALLS_ARRAY_SIZE];
+  enum Edge walls[NUM_SIDES];
   struct Node *left;
   struct Node *right;
   struct Node *front;
