@@ -1,6 +1,7 @@
 #pragma once
 
 #include "constants.h"
+#include "raylib.h"
 
 typedef enum Edge {
   LEFT,
