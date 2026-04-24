@@ -32,10 +32,13 @@ Edge getOppositeSide(Edge side) {
 }
 
 void maybeGrowTreeToSide(Node *head, Node **sideRef, Edge side, Edge entry, int amount) {
-  if (side != entry) {
+  if (side == entry) {
+    *sideRef = head;
+  } 
+  else {
     if (rand() % RAND_LIMIT == 1) {
       *sideRef = createNode();
-      growTree(*sideRef, amount - 1, getOppositeSide(side));
+      if (amount > 0) growTree(*sideRef, amount - 1, getOppositeSide(side));
     }
     else {
       head->walls[side] = 1;
@@ -44,20 +47,10 @@ void maybeGrowTreeToSide(Node *head, Node **sideRef, Edge side, Edge entry, int 
 }
 
 void growTree(Node *head, int amount, Edge entry) {
-  if (amount > 0) {
-    maybeGrowTreeToSide(head, &head->left, LEFT, entry, amount);
-    maybeGrowTreeToSide(head, &head->right, RIGHT, entry, amount);
-    maybeGrowTreeToSide(head, &head->back, BACK, entry, amount);
-    maybeGrowTreeToSide(head, &head->front, FRONT, entry, amount);
-  }
-  else {
-    // Leaf node
-    for (int i = LEFT; i <= FRONT; i++) {
-      if (i != entry) {
-        head->walls[i] = 1;
-      }
-    }
-  }
+  maybeGrowTreeToSide(head, &head->left, LEFT, entry, amount);
+  maybeGrowTreeToSide(head, &head->right, RIGHT, entry, amount);
+  maybeGrowTreeToSide(head, &head->back, BACK, entry, amount);
+  maybeGrowTreeToSide(head, &head->front, FRONT, entry, amount);
 }
 
 Vector3 offsetByX(Vector3 position, int x) {
@@ -81,7 +74,7 @@ typedef struct Models {
   Model *wall;
 } Models;
 
-void drawRooms(Node *head, Vector3 position, Models *models) {
+void drawRooms(Node *head, Vector3 position, Models *models, Edge entry) {
   // Floor
   DrawModel(*models->floor, position, 1.0f, WHITE);
 
@@ -113,17 +106,17 @@ void drawRooms(Node *head, Vector3 position, Models *models) {
   }
 
   if (head) {
-    if (head->left) {
-      drawRooms(head->left, offsetByX(position, -ROOM_WIDTH), models);
+    if (head->left && entry != LEFT) {
+      drawRooms(head->left, offsetByX(position, -ROOM_WIDTH), models, getOppositeSide(LEFT));
     }
-    if (head->right) {
-      drawRooms(head->right, offsetByX(position, ROOM_WIDTH), models);
+    if (head->right && entry != RIGHT) {
+      drawRooms(head->right, offsetByX(position, ROOM_WIDTH), models, getOppositeSide(RIGHT));
     }
-    if (head->back) {
-      drawRooms(head->back, offsetByZ(position, -ROOM_WIDTH), models);
+    if (head->back && entry != BACK) {
+      drawRooms(head->back, offsetByZ(position, -ROOM_WIDTH), models, getOppositeSide(BACK));
     }
-    if (head->front) {
-      drawRooms(head->front, offsetByZ(position, ROOM_WIDTH), models);
+    if (head->front && entry != FRONT) {
+      drawRooms(head->front, offsetByZ(position, ROOM_WIDTH), models, getOppositeSide(FRONT));
     }
   }
 }
@@ -191,11 +184,11 @@ int main(void)
 
       // Draw
       BeginDrawing();
-      ClearBackground(GREEN);
+      ClearBackground(RED);
 
       BeginMode3D(camera);
 
-      drawRooms(head, (Vector3){0, 0, 5}, &models);
+      drawRooms(head, (Vector3){0, 0, 5}, &models, NO_EDGE);
 
       EndMode3D();
 
