@@ -9,14 +9,16 @@
 #include "types.h"
 #include "utils.h"
 
-void maybeGrowTreeToSide(Node *head, Node **sideRef, Edge side, Edge entry, int amount) {
+void maybeGrowWorldToSide(Node *world[WORLD_CACHE_SIZE][WORLD_CACHE_SIZE], Node *head, Vector2Int location, Node **sideRef, Edge side, Edge entry, int depth) {
+  Vector2Int newLocation = moveFromLocation(side, location);
+
   if (side == entry) {
     *sideRef = head;
-  } 
+  }
   else {
-    if (rand() % RAND_LIMIT == 1) {
+    if (!world[newLocation.x][newLocation.y] && rand() % RAND_LIMIT == 0) {
       *sideRef = createNode();
-      if (amount > 0) growTree(*sideRef, amount - 1, getOppositeSide(side));
+      if (depth > 0) growWorld(world, *sideRef, newLocation, depth - 1, getOppositeSide(side));
     }
     else {
       head->walls[side] = 1;
@@ -24,11 +26,13 @@ void maybeGrowTreeToSide(Node *head, Node **sideRef, Edge side, Edge entry, int 
   }
 }
 
-void growTree(Node *head, int amount, Edge entry) {
-  maybeGrowTreeToSide(head, &head->left, LEFT, entry, amount);
-  maybeGrowTreeToSide(head, &head->right, RIGHT, entry, amount);
-  maybeGrowTreeToSide(head, &head->back, BACK, entry, amount);
-  maybeGrowTreeToSide(head, &head->front, FRONT, entry, amount);
+void growWorld(Node *world[WORLD_CACHE_SIZE][WORLD_CACHE_SIZE], Node *head, Vector2Int location, int depth, Edge entry) {
+  world[location.x][location.y] = head;
+
+  maybeGrowWorldToSide(world, head, location, &head->left, LEFT, entry, depth);
+  maybeGrowWorldToSide(world, head, location, &head->right, RIGHT, entry, depth);
+  maybeGrowWorldToSide(world, head, location, &head->back, BACK, entry, depth);
+  maybeGrowWorldToSide(world, head, location, &head->front, FRONT, entry, depth);
 }
 
 void drawRooms(Node *head, Vector3 position, Models *models, Edge entry) {
@@ -90,8 +94,8 @@ int main(void)
 
   // Camera setup
   Camera3D camera = { 0 };
-  camera.position = (Vector3){ 0.0f, 2.0f, 4.0f };
-  camera.target   = (Vector3){ 0.0f, 2.0f, 0.0f };
+  camera.position = (Vector3){ 0.0f, 2.0f, 0.0f };
+  camera.target   = (Vector3){ 0.0f, 2.0f, 1.0f };
   camera.up       = (Vector3){ 0.0f, 1.0f, 0.0f };
   camera.fovy     =  60.0f;
   camera.projection = CAMERA_PERSPECTIVE;
@@ -123,11 +127,12 @@ int main(void)
   wall.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = wallTexture;
   models.wall = &wall;
 
-  // Create tree
+  // Create world 
   srand(time(NULL));
 
+  Node *world[WORLD_CACHE_SIZE][WORLD_CACHE_SIZE];
   Node *head = createNode();
-  growTree(head, 3, NO_EDGE);
+  growWorld(world, head, (Vector2Int){0, 0}, RENDER_DEPTH, NO_EDGE);
 
   int cameraMode = CAMERA_FIRST_PERSON;
 

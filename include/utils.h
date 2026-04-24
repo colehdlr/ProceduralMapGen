@@ -3,6 +3,8 @@
 
 Node *createNode();
 
+Vector2Int moveFromLocation(Edge direction, Vector2Int location);
+
 Edge getOppositeSide(Edge side);
 
 Vector3 offsetByX(Vector3 position, int x);

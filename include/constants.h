@@ -5,4 +5,6 @@
 
 #define RAND_LIMIT 2
 
-#define CACHED_WORLD_SIZE 100
+#define RENDER_DEPTH 5
+
+#define WORLD_CACHE_SIZE 100

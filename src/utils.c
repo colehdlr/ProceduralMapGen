@@ -12,6 +12,25 @@ Node *createNode() {
   return node;
 }
 
+Vector2Int moveFromLocation(Edge direction, Vector2Int location) {
+  switch (direction) {
+    case LEFT:
+      location.x--;
+      return location;
+    case RIGHT:
+      location.x++;
+      return location;
+    case BACK:
+      location.y--;
+      return location;
+    case FRONT:
+      location.y++;
+      return location;
+    default:
+      return (Vector2Int){0, 0};
+  }
+}
+
 Edge getOppositeSide(Edge side) {
   switch (side) {
     case LEFT:

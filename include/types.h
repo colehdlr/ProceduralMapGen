@@ -11,6 +11,11 @@ typedef enum Edge {
   NO_EDGE
 } Edge;
 
+typedef struct Vector2Int {
+  int x;
+  int y;
+} Vector2Int;
+
 typedef struct Node {
   enum Edge walls[WALLS_ARRAY_SIZE];
   struct Node *left;
