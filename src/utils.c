@@ -60,3 +60,7 @@ Vector3 offsetByZ(Vector3 position, int z) {
   position.z += z;
   return position;
 }
+
+Vector2Int convertPositionToWorld(Vector3 position) {
+  return (Vector2Int){round(position.x/ROOM_WIDTH), round(position.z/ROOM_WIDTH)};
+}

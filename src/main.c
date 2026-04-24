@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
 #include "raylib.h"
 #include "raymath.h"
@@ -17,25 +18,41 @@ void growWorld(Node *world[WORLD_CACHE_SIZE][WORLD_CACHE_SIZE], Node *head, Vect
   Node **sides[NUM_SIDES] = {&head->left, &head->right, &head->back, &head->front};
 
   if (entry != NO_EDGE) {
-    *sides[entry] = head;
     availableSides--;
   }
 
   if (depth == 0) return;
 
   do {
-    Edge side = rand() % NUM_SIDES - 1;
+    Edge side = rand() % (NUM_SIDES - 1);
     if (side >= entry) side++;
 
     Vector2Int newLocation = stepInDirection(side, location);
 
-    if (*sides[side] == NULL && world[newLocation.x][newLocation.y] != NULL) {
-      *sides[side] = createNode();
+    if (*sides[side] == NULL && world[newLocation.x][newLocation.y] == NULL) {
+      *sides[side] = createNode(); 
+      switch (getOppositeSide(side)) {
+        case LEFT:
+          (*sides[side])->left = head;
+          break;
+        case RIGHT:
+          (*sides[side])->right = head;
+          break;
+        case BACK:
+          (*sides[side])->back = head;
+          break;
+        case FRONT:
+          (*sides[side])->front = head;
+          break;
+        default:
+          break;
+      }
+
       growWorld(world, *sides[side], newLocation, depth - 1, getOppositeSide(side));
       availableSides--;
     }
   }
-  while (availableSides > 0 && rand() % RAND_LIMIT == 0);
+  while (availableSides > 0 && rand() % RAND_LIMIT != 0);
 }
 
 void drawRooms(Node *head, Vector3 position, Models *models, Edge entry) {
@@ -148,11 +165,13 @@ int main(void)
 
       BeginMode3D(camera);
 
-      drawRooms(head, (Vector3){0, 0, 5}, &models, NO_EDGE);
+      drawRooms(head, (Vector3){0, 0, 0}, &models, NO_EDGE);
 
       EndMode3D();
 
       DrawFPS(10, 10);
+      Vector2Int worldPos = convertPositionToWorld(camera.position);
+      DrawText(TextFormat("Location: %d %d", worldPos.x , worldPos.y), 10, 50, 20, GREEN);
 
       EndDrawing();
   }

@@ -3,7 +3,7 @@
 
 #define NUM_SIDES 4
 
-#define RAND_LIMIT 2
+#define RAND_LIMIT 4
 
 #define RENDER_DEPTH 5
 

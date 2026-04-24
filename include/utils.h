@@ -12,3 +12,5 @@ Vector3 offsetByX(Vector3 position, int x);
 Vector3 offsetByY(Vector3 position, int y);
 
 Vector3 offsetByZ(Vector3 position, int z);
+
+Vector2Int convertPositionToWorld(Vector3 position);
