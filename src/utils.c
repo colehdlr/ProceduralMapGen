@@ -62,5 +62,12 @@ Vector3 offsetByZ(Vector3 position, int z) {
 }
 
 Vector2Int convertPositionToWorld(Vector3 position) {
-  return (Vector2Int){round(position.x/ROOM_WIDTH), round(position.z/ROOM_WIDTH)};
+  return (Vector2Int){
+    round(position.x/ROOM_WIDTH) + WORLD_CACHE_LENGTH/2,
+    round(position.z/ROOM_WIDTH) + WORLD_CACHE_LENGTH/2
+  };
+}
+
+bool sameVector2Int(Vector2Int a, Vector2Int b) {
+  return a.x == b.x && a.y == b.y;
 }

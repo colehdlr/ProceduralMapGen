@@ -3,8 +3,14 @@
 
 #define NUM_SIDES 4
 
-#define RAND_LIMIT 4
+#define RAND_LIMIT 2
 
-#define RENDER_DEPTH 5
+#define RENDER_DEPTH 10
 
 #define WORLD_CACHE_LENGTH 100
+
+#define MOUSE_SENSITIVITY 0.1f
+
+#define ACCELERATION 100
+
+#define FRICTION 8
