@@ -131,6 +131,7 @@ void handleMovement(Camera3D *camera, Node *world[WORLD_CACHE_LENGTH][WORLD_CACH
   // Collision check
   // TODO: Reduce duplication
   // TODO: Increase directional control of BHOP
+  // TODO: Looking should have stronger effect on direction on movement
   if (velocity->x != 0) {
     if ((*onWall == LEFT && velocity->x > 0) ||
         (*onWall == RIGHT && velocity->x < 0)) {
