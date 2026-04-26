@@ -97,55 +97,112 @@ void drawRooms(Node *head, Vector3 position, Models *models, Edge entry) {
   }
 }
 
-void handleMovement(Camera3D *camera, Node *world[WORLD_CACHE_LENGTH][WORLD_CACHE_LENGTH], Vector3 *velocity) {
+void handleMovement(Camera3D *camera, Node *world[WORLD_CACHE_LENGTH][WORLD_CACHE_LENGTH], Vector3 *velocity, Edge *onWall) {
   Vector2Int worldPos = convertPositionToWorld(camera->position);
   float deltaTime = GetFrameTime();
+  bool onGround = (camera->position.y == PLAYER_HEIGHT);
 
-  Vector3 forward = Vector3Subtract(camera->target, camera->position);
-  forward.y = 0;
-  forward = Vector3Normalize(forward);
+  if (onGround) {
+    Vector3 forward = Vector3Subtract(camera->target, camera->position);
+    forward.y = 0;
+    forward = Vector3Normalize(forward);
 
-  Vector3 right = Vector3Normalize(Vector3CrossProduct(forward, (Vector3){0, 1, 0}));
+    Vector3 right = Vector3Normalize(Vector3CrossProduct(forward, (Vector3){0, 1, 0}));
 
-  // Accumulate directional acceleration
-  Vector3 moveDir = {0};
-  if (IsKeyDown(KEY_W)) moveDir = Vector3Add(moveDir, forward);
-  if (IsKeyDown(KEY_S)) moveDir = Vector3Subtract(moveDir, forward);
-  if (IsKeyDown(KEY_D)) moveDir = Vector3Add(moveDir, right);
-  if (IsKeyDown(KEY_A)) moveDir = Vector3Subtract(moveDir, right);
+    // Accumulate directional acceleration
+    Vector3 moveDir = {0};
+    if (IsKeyDown(KEY_W)) moveDir = Vector3Add(moveDir, forward);
+    if (IsKeyDown(KEY_S)) moveDir = Vector3Subtract(moveDir, forward);
+    if (IsKeyDown(KEY_D)) moveDir = Vector3Add(moveDir, right);
+    if (IsKeyDown(KEY_A)) moveDir = Vector3Subtract(moveDir, right);
 
-  // Normalise
-  if (Vector3Length(moveDir) > 0)
-    moveDir = Vector3Normalize(moveDir);
+    // Normalise
+    if (Vector3Length(moveDir) > 0) {
+      moveDir = Vector3Normalize(moveDir);
+    }
 
-  *velocity = Vector3Add(*velocity, Vector3Scale(moveDir, ACCELERATION * deltaTime));
+    *velocity = Vector3Add(*velocity, Vector3Scale(moveDir, ACCELERATION * deltaTime));
 
-  // Friction
-  velocity->x -= velocity->x * FRICTION * deltaTime;
-  velocity->z -= velocity->z * FRICTION * deltaTime;
+    // Friction
+    velocity->x -= velocity->x * FRICTION * deltaTime;
+    velocity->z -= velocity->z * FRICTION * deltaTime;
+  }
 
-  // Collision check - *10 to ensure distance from wall
-  // TODO: Add a constant padding/margin rather than scaling velocity
-  Vector3 posX = Vector3Add(camera->position, (Vector3){velocity->x * deltaTime * 10, 0, 0});
-  Vector3 posZ = Vector3Add(camera->position, (Vector3){0, 0, velocity->z * deltaTime * 5});
+  // Collision check
+  // TODO: Reduce duplication
+  // TODO: Increase directional control of BHOP
+  if (velocity->x != 0) {
+    if ((*onWall == LEFT && velocity->x > 0) ||
+        (*onWall == RIGHT && velocity->x < 0)) {
+      *onWall = NO_EDGE;
+    }
+
+    int paddingX = copysign(WALL_PADDING, velocity->x);
+    Vector3 posX = Vector3Add(camera->position, (Vector3){velocity->x * deltaTime + paddingX, 0, 0});
 
     if (!sameVector2Int(worldPos, convertPositionToWorld(posX))) {
-        bool canPass = (velocity->x > 0)
-          ? world[worldPos.x][worldPos.y]->right != NULL
-          : world[worldPos.x][worldPos.y]->left != NULL;
-        if (!canPass) velocity->x = 0;
+      if (velocity->x < 0 && world[worldPos.x][worldPos.y]->left == NULL) {
+        *onWall = LEFT;
+        velocity->x = 0;
+      }
+      if (velocity->x > 0 && world[worldPos.x][worldPos.y]->right == NULL) {
+        *onWall = RIGHT;
+        velocity->x = 0;
+      }
     }
+  }
+  if (velocity->z != 0) {
+    if ((*onWall == BACK && velocity->z > 0) ||
+        (*onWall == FRONT && velocity->z < 0)) {
+      *onWall = NO_EDGE;
+    }
+
+    int paddingZ = copysign(WALL_PADDING, velocity->z);
+    Vector3 posZ = Vector3Add(camera->position, (Vector3){0, 0, velocity->z * deltaTime + paddingZ});
+
     if (!sameVector2Int(worldPos, convertPositionToWorld(posZ))) {
-        bool canPass = (velocity->z > 0)
-          ? world[worldPos.x][worldPos.y]->front != NULL
-          : world[worldPos.x][worldPos.y]->back != NULL;
-        if (!canPass) velocity->z = 0;
+      if (velocity->z < 0 && world[worldPos.x][worldPos.y]->back == NULL) {
+        *onWall = BACK;
+        velocity->z = 0;
+      }
+      if (velocity->z > 0 && world[worldPos.x][worldPos.y]->front == NULL) {
+        *onWall = FRONT;
+        velocity->z = 0;
+      }
     }
+  }
+
+  // Vertical movement
+  if (onGround && IsKeyDown(KEY_SPACE)) {
+    velocity->y = JUMP_VELOCITY;
+  }
+  else if (!onGround) {
+    velocity->y -= GRAVITY * deltaTime;
+
+    if (*onWall != NO_EDGE && velocity->y < 0) {
+      velocity->x *= 1 + WALL_ACCELERATION_FACTOR * deltaTime;
+      velocity->z *= 1 + WALL_ACCELERATION_FACTOR * deltaTime;
+
+      if (velocity->y + WALL_FRICTION * deltaTime <= 0) {
+        velocity->y += WALL_FRICTION * deltaTime;
+      }
+      else {
+        velocity->y = 0;
+      }
+    }
+  }
 
   // Apply movement
   Vector3 frameVelocity = Vector3Scale(*velocity, deltaTime);
   camera->position = Vector3Add(camera->position, frameVelocity);
   camera->target = Vector3Add(camera->target, frameVelocity);
+
+  float height = camera->position.y - PLAYER_HEIGHT;
+  if (height < 0) {
+    camera->position.y -= height;
+    camera->target.y -= height;
+    velocity->y = 0;
+  }
 }
 
 int main(void)
@@ -159,11 +216,12 @@ int main(void)
   InitWindow(screenWidth, screenHeight, "Procedural Generation Demo");
 
   Vector3 velocity = { 0, 0, 0 };
+  Edge onWall = NO_EDGE;
 
   // Camera setup
   Camera3D camera = { 0 };
-  camera.position = (Vector3){ 0.0f, 2.0f, 0.0f };
-  camera.target   = (Vector3){ 0.0f, 2.0f, 1.0f };
+  camera.position = (Vector3){ 0.0f, PLAYER_HEIGHT, 0.0f };
+  camera.target   = (Vector3){ 0.0f, PLAYER_HEIGHT, 1.0f };
   camera.up       = (Vector3){ 0.0f, 1.0f, 0.0f };
   camera.fovy     =  60.0f;
   camera.projection = CAMERA_PERSPECTIVE;
@@ -207,7 +265,7 @@ int main(void)
 
   while (!WindowShouldClose()) {
     // Update
-    handleMovement(&camera, world, &velocity);
+    handleMovement(&camera, world, &velocity, &onWall);
 
     Vector2 mouseDelta = GetMouseDelta();
     UpdateCameraPro(&camera,
