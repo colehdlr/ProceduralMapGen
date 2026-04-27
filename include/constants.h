@@ -25,3 +25,5 @@
 #define JUMP_VELOCITY 10
 
 #define WALL_PADDING 1
+
+#define CROSSHAIR_LENGTH 10

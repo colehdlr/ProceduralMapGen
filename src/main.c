@@ -102,11 +102,11 @@ void handleMovement(Camera3D *camera, Node *world[WORLD_CACHE_LENGTH][WORLD_CACH
   float deltaTime = GetFrameTime();
   bool onGround = (camera->position.y == PLAYER_HEIGHT);
 
-  if (onGround) {
-    Vector3 forward = Vector3Subtract(camera->target, camera->position);
-    forward.y = 0;
-    forward = Vector3Normalize(forward);
+  Vector3 forward = Vector3Subtract(camera->target, camera->position);
+  forward.y = 0;
+  forward = Vector3Normalize(forward);
 
+  if (onGround) {
     Vector3 right = Vector3Normalize(Vector3CrossProduct(forward, (Vector3){0, 1, 0}));
 
     // Accumulate directional acceleration
@@ -127,11 +127,16 @@ void handleMovement(Camera3D *camera, Node *world[WORLD_CACHE_LENGTH][WORLD_CACH
     velocity->x -= velocity->x * FRICTION * deltaTime;
     velocity->z -= velocity->z * FRICTION * deltaTime;
   }
+  else {
+    Vector3 horizontal = { velocity->x, 0.0f, velocity->z };
+    float speed = Vector3Length(horizontal);
+
+    velocity->x = speed * forward.x;
+    velocity->z = speed * forward.z;
+  }
 
   // Collision check
   // TODO: Reduce duplication
-  // TODO: Increase directional control of BHOP
-  // TODO: Looking should have stronger effect on direction on movement
   if (velocity->x != 0) {
     if ((*onWall == LEFT && velocity->x > 0) ||
         (*onWall == RIGHT && velocity->x < 0)) {
@@ -283,13 +288,17 @@ int main(void)
     BeginDrawing();
     ClearBackground(BLACK);
 
+    // 3D
     BeginMode3D(camera);
 
     drawRooms(head, (Vector3){0, 0, 0}, &models, NO_EDGE);
 
     EndMode3D();
 
+    // 2D
     DrawFPS(10, 10);
+    DrawLine(screenWidth/2, screenHeight/2 - CROSSHAIR_LENGTH, screenWidth/2, screenHeight/2 + CROSSHAIR_LENGTH, RED);
+    DrawLine(screenWidth/2 - CROSSHAIR_LENGTH, screenHeight/2, screenWidth/2 + CROSSHAIR_LENGTH, screenHeight/2, RED);
 
     EndDrawing();
   }
